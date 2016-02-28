@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Art</title>
+  <link rel="stylesheet" href="build/styles/main.css">
+</head>
+<body>
+  <!-- Three.js Container -->
+  <div id="container"></div>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+  precision highp float;
+  precision highp int;
+
+  attribute vec3 color;
+  attribute float pSize;
+  attribute float pOpacity;
+
+  uniform float size;
+  uniform float scale;
+
+  varying vec3 vColor;
+  varying float vOpacity;
+
+
+  void main() {
+
+      vColor = color;
+      vOpacity = pOpacity;
+
+      vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+      gl_PointSize = 2.0 * pSize * size * ( scale / length( mvPosition.xyz ) );
+      gl_Position = projectionMatrix * mvPosition;
+  }
+</script>
+<script id="fragmentShader" type="x-shader/x-fragment">
+  precision highp float;
+  precision highp int;
+
+  uniform vec3 diffuse;
+  uniform float opacity;
+
+  varying vec3 vColor;
+  varying float vOpacity;
+
+  uniform sampler2D map;
+
+  void main() {
+      gl_FragColor = vec4( diffuse, vOpacity );
+      gl_FragColor = gl_FragColor * texture2D( map, vec2( gl_PointCoord.x, 1.0 - gl_PointCoord.y ) );
+      gl_FragColor = gl_FragColor * vec4( vColor, 1.0 );
+  }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r14/Stats.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r74/three.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/2.4.0/seedrandom.min.js"></script>
+<script src="assets/vendor/OrbitControls.js"></script>
+<script src="assets/vendor/chroma.min.js"></script>
+<script src="build/scripts/bundle.js"></script>
+</body>
+</html>

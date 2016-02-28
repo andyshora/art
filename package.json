@@ -1,0 +1,27 @@
+{
+  "name": "art",
+  "version": "1.0.0",
+  "description": "Art",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "styles": "sass src/styles/main.scss build/styles/main.css",
+    "scripts": "$(npm bin)/browserify src/scripts/index.js -t babelify --outfile build/scripts/bundle.js",
+    "start": "python -m SimpleHTTPServer 8000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andyshora/art.git"
+  },
+  "author": "Andy Shora <andyshora@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/andyshora/art#readme",
+  "devDependencies": {
+    "babel-cli": "^6.5.1",
+    "babel-preset-es2015": "^6.5.0",
+    "babelify": "^7.2.0",
+    "browserify": "^13.0.0",
+    "npm": "^3.7.3",
+    "underscore": "^1.8.3"
+  }
+}
