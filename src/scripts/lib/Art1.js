@@ -14,10 +14,8 @@ class Art1 {
 
     this.scene = new THREE.Scene();
 
-    this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
-    this.camera.position.x = 15;
-    this.camera.position.y = 16;
-    this.camera.position.z = 13;
+    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.01, 1000);
+    this.camera.position.z = 1.5;
 
     this.camera.lookAt(this.scene.position);
 
@@ -52,6 +50,7 @@ class Art1 {
 
     // this.addFloor();
     this.addEye();
+    this.addUniverse();
 
     // window.addEventListener( 'resize', this.onWindowResize.bind(this), false );
     // window.addEventListener( 'mousedown', this.onMouseDown.bind(this), false );
@@ -77,12 +76,14 @@ class Art1 {
   }
   addEye() {
 
-    let eyeGeom = new THREE.SphereGeometry(this.dimensions.nodeSize, 20, 20);
-    let eyeMat = new THREE.MeshPhongMaterial();
+    let eyeMat = new THREE.MeshPhongMaterial({
+      shading: THREE.SmoothShading,
+      transparent: false,
+      depthWrite: false
+    });
 
     let onEyeTextureLoaded = () => {
-      console.log(eyeMat);
-      let eye = new THREE.Mesh(eyeGeom, eyeMat);
+      let eye = new THREE.Mesh(new THREE.SphereGeometry(this.dimensions.nodeSize, 20, 20), eyeMat);
       eye.position.x = 0;
       eye.position.y = 0;
       eye.position.z = 0;
@@ -90,18 +91,28 @@ class Art1 {
       this.scene.add(eye);
     };
 
-    
-    eyeMat.map = new THREE.TextureLoader().load('../assets/textures/eyes/green-1024.png', onEyeTextureLoaded.bind(this));
-    eyeMat.shading = THREE.SmoothShading;
-    eyeMat.transparent = false;
-    // eyeMat.map.wrapS = eyeMat.map.wrapT = THREE.RepeatWrapping;
-    // eyeMat.map.repeat.set(4, 4);
-    // eyeMat.side = THREE.DoubleSide;
-    eyeMat.depthWrite = false;
-    // eyeMat.color = new THREE.Color(0xff0000);
+    eyeMat.map = new THREE.TextureLoader().load('../assets/textures/eyes/blue-1024.jpg', onEyeTextureLoaded.bind(this));
 
     let light = new THREE.AmbientLight( 0xffffff ); // soft white light
     this.scene.add(light);
+  }
+  addUniverse() {
+    
+    let onUniverseTextureLoaded = () => {
+      let universe = new THREE.Mesh(new THREE.SphereGeometry(200, 64, 64), universeMat);
+
+      this.scene.add(universe);
+    };
+
+    let universeMat = new THREE.MeshBasicMaterial({
+      side: THREE.BackSide
+    });
+
+    universeMat.map = new THREE.TextureLoader().load('../assets/textures/marble.jpg', onUniverseTextureLoaded.bind(this));
+
+    universeMat.map.wrapS = universeMat.map.wrapT = THREE.RepeatWrapping;
+    universeMat.map.repeat.set(8, 8);
+
   }
   addEyes() {
 
