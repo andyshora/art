@@ -1,7 +1,30 @@
 @import 'stats';
+@import 'art/skull';
+
+$c1: black;
+$c2: yellow;
 
 body {
   margin: 0;
   padding: 0;
+
+  &.body--skull {
+    background: $c1;
+    text-align: center;
+    
+  }
+}
+
+.skull {
+  background: $c1;
+  margin: 0 auto;
+}
+
+.skull-point {
+  fill: none;
+
+  &.skull-point--active {
+    fill: $c2;
+  }
 }
 
