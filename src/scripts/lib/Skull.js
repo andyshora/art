@@ -1,3 +1,5 @@
+const SAMPLE_RATE = 2;
+
 class Skull {
   constructor(options) {
 
@@ -34,13 +36,15 @@ class Skull {
       let imgData = ctx.getImageData(0, 0, img.width, img.height);
 
       this.pixels = imgData.data;
-      const sampleRate = 2;
+
 
       let width = img.width;
       let height = img.height;
 
-      for (var i = 0; i < height; i+=sampleRate) {
-        for (var j = 0; j < width; j+=sampleRate) {
+      let n = 0;
+
+      for (var i = 0; i < height; i+=SAMPLE_RATE) {
+        for (var j = 0; j < width; j+=SAMPLE_RATE) {
 
           let offsetY = width * 4 * i;
 
@@ -52,12 +56,17 @@ class Skull {
           let circleColor = r < 200 ? 'yellow' : 'black';
 
           let circle = skull.append('circle')
-            .attr('cx', j - (sampleRate / 2))
-            .attr('cy', i - (sampleRate / 2))
-            .attr('r', sampleRate / 2)
-            .attr('class', r < 200 ? 'skull-point skull-point--active': 'skull-point');
+            .attr('cx', j - (SAMPLE_RATE / 2))
+            .attr('cy', i - (SAMPLE_RATE / 2))
+            .attr('r', SAMPLE_RATE / 2)
+            .attr('class', d => {
 
+              const numberedClass = `skull-point--${n % 3}`;
 
+              return r < 200 ? `skull-point skull-point--active ${numberedClass}`: `skull-point ${numberedClass}`;
+            });
+
+            n++;
         }
       }
 

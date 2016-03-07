@@ -1,4 +1,52 @@
+$c1: black;
+$c2: yellow;
+$c3: black;
+$c4: rgb(50,50,50);
 
 .skull {
-
+  background: $c1;
+  margin: 0 auto;
 }
+
+.skull-point {
+  fill: none;
+
+  &.skull-point--active {
+    fill: $c2;
+
+    &.skull-point--0 {
+      animation: p2 .3s 0s infinite;
+    }
+    &.skull-point--1 {
+      animation: p2 .3s .1 infinite;
+    }
+    &.skull-point--2 {
+      animation: p2 .3s .2s infinite;
+    }
+  }
+}
+
+@keyframes p1 {
+  0% {
+    fill: $c2;
+  }
+  50% {
+    fill: $c3;
+  }
+  100% {
+    fill: $c2;
+  }
+}
+
+@keyframes p2 {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+

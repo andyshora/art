@@ -3,6 +3,7 @@
 
 $c1: black;
 $c2: yellow;
+$c3: black;
 
 body {
   margin: 0;
@@ -14,17 +15,3 @@ body {
     
   }
 }
-
-.skull {
-  background: $c1;
-  margin: 0 auto;
-}
-
-.skull-point {
-  fill: none;
-
-  &.skull-point--active {
-    fill: $c2;
-  }
-}
-
