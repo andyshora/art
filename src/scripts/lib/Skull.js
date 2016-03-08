@@ -1,5 +1,5 @@
 const SAMPLE_RATE = 6;
-const STEP = 10;
+const STEP = 2;
 
 class Skull {
   constructor(options) {
@@ -17,12 +17,15 @@ class Skull {
     this.init();
     this.drawSkull();
     this.render();
-    this.colorScale = chroma.scale(['rgb(243,243,21)', 'rgb(50,50,50)']);
+
+    this.entryType = options.entryType;
+    this.step = options.step;
+    this.colorScale = chroma.scale(['rgb(255,0,0)', options.color]);
 
     this.dimensions = {
       width: 500,
       height: 500,
-      radius: 5
+      radius: 6
     };
   }
   init() {
@@ -45,9 +48,9 @@ class Skull {
         if (p.x0 !== p.x) {
           // move 1 step towards target position
           let diff = p.x - p.x0;
-          let newX = ~~(diff > 0 ? p.x0 + STEP : p.x0 - STEP);
+          let newX = ~~(diff > 0 ? p.x0 + this.step : p.x0 - this.step);
 
-          if (Math.abs(diff) < STEP) {
+          if (Math.abs(diff) < this.step) {
             newX = p.x;
           }
 
@@ -61,20 +64,19 @@ class Skull {
         if (p.y0 !== p.y) {
           // move 1 step towards target position
           let diff = p.y - p.y0;
-          let newY = ~~(diff > 0 ? p.y0 + STEP : p.y0 - STEP);
+          let newY = ~~(diff > 0 ? p.y0 + this.step : p.y0 - this.step);
 
-          if (Math.abs(diff) < STEP) {
+          if (Math.abs(diff) < this.step) {
             newY = p.y;
           }
 
           // only update node if it's visible
           if (newY >= 0 && newY <= this.dimensions.height) {
             c.attr('cy', newY);
-            const colorScaleFactor = Math.abs(diff) < STEP ? 1 : 1 - (Math.abs(diff) / 500);
+            const colorScaleFactor = Math.abs(diff) < this.step ? 1 : 1 - (Math.abs(diff) / 500);
 
             let targetColor = this.colorScale(colorScaleFactor);
             c.style('fill', targetColor);
-            c.style('fill-opacity', colorScaleFactor);
           }
           p.y0 = newY;
         }
@@ -106,8 +108,8 @@ class Skull {
 
     let n = 0;
 
-    for (var i = imgHeight; i >= 0; i-=SAMPLE_RATE) {
-      for (var j = 0; j < imgWidth; j+=SAMPLE_RATE) {
+    for (var i = imgHeight; i >= 0; i -= SAMPLE_RATE) {
+      for (var j = 0; j < imgWidth; j += SAMPLE_RATE) {
 
         let offsetY = imgWidth * 4 * i;
 
@@ -119,9 +121,33 @@ class Skull {
         let targetX = (j / imgWidth) * this.dimensions.width;
         let targetY = (i / imgHeight) * this.dimensions.height;
 
+        let yBoost = (Math.abs(j - (imgWidth / 2)) / imgWidth) * -200;
+
+        let x0 = 0;
+        let y0 = 0;
+
+        switch (this.entryType) {
+          case 1:
+            x0 = targetX;
+            y0 = targetY + imgHeight + yBoost + n - ~~(Math.random() * 10) * 10;
+          break;
+          case 2:
+            x0 = (imgWidth / 2) + Math.sin(n * Math.PI / 180) * (imgWidth / 2);
+            y0 = (imgHeight / 2) + Math.cos(n * Math.PI / 180) * (imgHeight / 2);
+          break;
+          case 3:
+            x0 = ~~(Math.random() * imgWidth);
+            y0 = ~~(Math.random() * imgHeight);
+          break;
+          default:
+            x0 = 0;
+            y0 = 0;
+          break;
+        }
+
         let p = {
-          x0: targetX,
-          y0: targetY + imgHeight + n - ~~(Math.random() * 10) * 10,//n % 2 ? targetY - imgHeight - n : targetY + imgHeight + n,
+          x0: x0,
+          y0: y0,
           sourceX: targetX,
           sourceY: targetY,
           x: targetX - (this.dimensions.radius / 2),
