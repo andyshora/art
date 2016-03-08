@@ -1,11 +1,12 @@
 $c1: black;
-$c2: yellow;
+$c2: rgb(50,50,50);
 $c3: black;
 $c4: rgb(50,50,50);
 
 .skull {
   background: $c1;
   margin: 0 auto;
+  padding: 100px;
 }
 
 .skull-point {

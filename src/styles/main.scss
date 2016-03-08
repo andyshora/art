@@ -2,8 +2,12 @@
 @import 'art/skull';
 
 $c1: black;
-$c2: yellow;
+$c2: darkGrey;
 $c3: black;
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
