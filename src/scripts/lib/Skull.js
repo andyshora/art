@@ -18,8 +18,9 @@ class Skull {
     this.render();
 
     this.dimensions = {
-      width: 800,
-      height: 800
+      width: 500,
+      height: 500,
+      radius: 10
     };
   }
   init() {
@@ -29,7 +30,7 @@ class Skull {
 
     this.frameNum++;
 
-    const STEP = 4;
+    const STEP = 10;
 
     // check if positions need moving
     for (var i = 0; i < this.positions.length; i++) {
@@ -45,7 +46,10 @@ class Skull {
           newX = p.x;
         }
 
-        c.attr('cx', newX);
+        // only update node if it's visible
+        if (newX >= 0 && newX <= this.dimensions.width) {
+          c.attr('cx', newX);
+        }
         p.x0 = newX;
       }
 
@@ -58,82 +62,87 @@ class Skull {
           newY = p.y;
         }
 
-        c.attr('cy', newY);
+        // only update node if it's visible
+        if (newY >= 0 && newY <= this.dimensions.height) {
+          c.attr('cy', newY);
+        }
         p.y0 = newY;
       }
     }
 
     requestAnimationFrame(this.render.bind(this));
   }
-  drawSkull() {
-    let skull = this.svgContainer.append('g').attr('transform', 'translate(0,0)');
+  initPoints() {
 
-    let canvas = document.createElement('canvas');
-    
-    let img = document.createElement('img');
-    img.src = '/assets/images/skull.jpg';
-    img.onload = () => {
+    // invisible canvas stuff
+    this.tempCanvas.width = this.sourceImg.width;
+    this.tempCanvas.height = this.sourceImg.height;
 
-      this.svgContainer.attr('width', this.dimensions.width);
-      this.svgContainer.attr('height', this.dimensions.height);
+    let ctx = this.tempCanvas.getContext('2d');
+    ctx.drawImage(this.sourceImg, 0, 0);
+    let imgData = ctx.getImageData(0, 0, this.sourceImg.width, this.sourceImg.height);
+    this.pixels = imgData.data;
 
-      // invisible canvas stuff
-      canvas.width = img.width;
-      canvas.height = img.height;
+    let imgWidth = this.sourceImg.width;
+    let imgHeight = this.sourceImg.height;
 
-      let ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      let imgData = ctx.getImageData(0, 0, img.width, img.height);
-      this.pixels = imgData.data;
+    // resize new canvas
+    let ratio = imgWidth / imgHeight;
+    this.dimensions.width = this.dimensions.height * ratio;
+    this.svgContainer.attr('width', this.dimensions.width);
+    this.svgContainer.attr('height', this.dimensions.height);
 
-      let imgWidth = img.width;
-      let imgHeight = img.height;
+    let n = 0;
 
-      let n = 0;
+    for (var i = 0; i < imgHeight; i+=SAMPLE_RATE) {
+      for (var j = 0; j < imgWidth; j+=SAMPLE_RATE) {
 
-      for (var i = 0; i < imgHeight; i+=SAMPLE_RATE) {
-        for (var j = 0; j < imgWidth; j+=SAMPLE_RATE) {
+        let offsetY = imgWidth * 4 * i;
 
-          let offsetY = imgWidth * 4 * i;
+        let r = this.pixels[offsetY + (j * 4)];        
+        let g = this.pixels[offsetY + (j * 4) + 1];
+        let b = this.pixels[offsetY + (j * 4) + 2];
+        let a = this.pixels[offsetY + (j * 4) + 3];
 
-          let r = this.pixels[offsetY + (j * 4)];        
-          let g = this.pixels[offsetY + (j * 4) + 1];
-          let b = this.pixels[offsetY + (j * 4) + 2];
-          let a = this.pixels[offsetY + (j * 4) + 3];
+        let targetX = (j / imgWidth) * this.dimensions.width;
+        let targetY = (i / imgHeight) * this.dimensions.height;
 
-          let p = {
-            x0: ~~(Math.random() * imgWidth),
-            y0: ~~(Math.random() * imgHeight),
-            sourceX: j,
-            sourceY: i,
-            x: j - (SAMPLE_RATE / 2),
-            y: i - (SAMPLE_RATE / 2),
-            r: SAMPLE_RATE / 2
-          };
+        let p = {
+          x0: targetX,
+          y0: targetY - imgHeight - n,//n % 2 ? targetY - imgHeight - n : targetY + imgHeight + n,
+          sourceX: targetX,
+          sourceY: targetY,
+          x: targetX - (this.dimensions.radius / 2),
+          y: targetY - (this.dimensions.radius / 2),
+          r: this.dimensions.radius / 2
+        };
 
-          let circle = skull.append('circle')
-            .attr('cx', p.x0)
-            .attr('cy', p.y0)
-            .attr('r', p.r)
-            .attr('class', d => {
-              const numberedClass = `skull-point--${n % 3}`;
-              return r < 200 ? `skull-point skull-point--active`: `skull-point`;
-            });
+        let circle = this.skull.append('circle')
+          .attr('cx', p.x0)
+          .attr('cy', p.y0)
+          .attr('r', p.r)
+          .attr('class', d => {
+            const numberedClass = `skull-point--${n % 3}`;
+            return r < 200 ? `skull-point skull-point--active`: `skull-point`;
+          });
 
-          this.positions.push(p);
-          this.points.push(circle);
+        this.positions.push(p);
+        this.points.push(circle);
 
-          n++;
-        }
+        n++;
       }
+    }
+  }
+  drawSkull() {
+    this.skull = this.svgContainer.append('g').attr('transform', 'translate(0,0)');
 
-      console.log('this.positions', this.positions);
+    this.tempCanvas = document.createElement('canvas');
+    
+    this.sourceImg = document.createElement('img');
+    this.sourceImg.src = '/assets/images/skull.jpg';
+    this.sourceImg.onload = this.initPoints.bind(this);
 
-    };
-
-
-
-    canvas.appendChild(img);
+    this.tempCanvas.appendChild(this.sourceImg);
   }
   
 }
