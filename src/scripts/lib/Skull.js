@@ -1,4 +1,5 @@
 const SAMPLE_RATE = 6;
+const STEP = 10;
 
 class Skull {
   constructor(options) {
@@ -16,11 +17,12 @@ class Skull {
     this.init();
     this.drawSkull();
     this.render();
+    this.colorScale = chroma.scale(['rgb(243,243,21)', 'rgb(50,50,50)']);
 
     this.dimensions = {
       width: 500,
       height: 500,
-      radius: 10
+      radius: 5
     };
   }
   init() {
@@ -30,47 +32,57 @@ class Skull {
 
     this.frameNum++;
 
-    const STEP = 10;
+    
+    // skip every other frame to allow for 33ms processing time
+    const doWork = this.frameNum % 2;
 
-    // check if positions need moving
-    for (var i = 0; i < this.positions.length; i++) {
-      let p = this.positions[i];
-      let c = this.points[i];
+    if (doWork) {
+      // check if positions need moving
+      for (var i = 0; i < this.positions.length; i++) {
+        let p = this.positions[i];
+        let c = this.points[i];
 
-      if (p.x0 !== p.x) {
-        // move 1 step towards target position
-        let diff = p.x - p.x0;
-        let newX = ~~(diff > 0 ? p.x0 + STEP : p.x0 - STEP);
+        if (p.x0 !== p.x) {
+          // move 1 step towards target position
+          let diff = p.x - p.x0;
+          let newX = ~~(diff > 0 ? p.x0 + STEP : p.x0 - STEP);
 
-        if (Math.abs(diff) < STEP) {
-          newX = p.x;
+          if (Math.abs(diff) < STEP) {
+            newX = p.x;
+          }
+
+          // only update node if it's visible
+          if (newX >= 0 && newX <= this.dimensions.width) {
+            c.attr('cx', newX);
+          }
+          p.x0 = newX;
         }
 
-        // only update node if it's visible
-        if (newX >= 0 && newX <= this.dimensions.width) {
-          c.attr('cx', newX);
-        }
-        p.x0 = newX;
-      }
+        if (p.y0 !== p.y) {
+          // move 1 step towards target position
+          let diff = p.y - p.y0;
+          let newY = ~~(diff > 0 ? p.y0 + STEP : p.y0 - STEP);
 
-      if (p.y0 !== p.y) {
-        // move 1 step towards target position
-        let diff = p.y - p.y0;
-        let newY = ~~(diff > 0 ? p.y0 + STEP : p.y0 - STEP);
+          if (Math.abs(diff) < STEP) {
+            newY = p.y;
+          }
 
-        if (Math.abs(diff) < STEP) {
-          newY = p.y;
-        }
+          // only update node if it's visible
+          if (newY >= 0 && newY <= this.dimensions.height) {
+            c.attr('cy', newY);
+            const colorScaleFactor = Math.abs(diff) < STEP ? 1 : 1 - (Math.abs(diff) / 500);
 
-        // only update node if it's visible
-        if (newY >= 0 && newY <= this.dimensions.height) {
-          c.attr('cy', newY);
+            let targetColor = this.colorScale(colorScaleFactor);
+            c.style('fill', targetColor);
+            c.style('fill-opacity', colorScaleFactor);
+          }
+          p.y0 = newY;
         }
-        p.y0 = newY;
       }
     }
 
     requestAnimationFrame(this.render.bind(this));
+
   }
   initPoints() {
 
@@ -94,7 +106,7 @@ class Skull {
 
     let n = 0;
 
-    for (var i = 0; i < imgHeight; i+=SAMPLE_RATE) {
+    for (var i = imgHeight; i >= 0; i-=SAMPLE_RATE) {
       for (var j = 0; j < imgWidth; j+=SAMPLE_RATE) {
 
         let offsetY = imgWidth * 4 * i;
@@ -109,7 +121,7 @@ class Skull {
 
         let p = {
           x0: targetX,
-          y0: targetY - imgHeight - n,//n % 2 ? targetY - imgHeight - n : targetY + imgHeight + n,
+          y0: targetY + imgHeight + n - ~~(Math.random() * 10) * 10,//n % 2 ? targetY - imgHeight - n : targetY + imgHeight + n,
           sourceX: targetX,
           sourceY: targetY,
           x: targetX - (this.dimensions.radius / 2),
@@ -126,10 +138,13 @@ class Skull {
             return r < 200 ? `skull-point skull-point--active`: `skull-point`;
           });
 
-        this.positions.push(p);
-        this.points.push(circle);
+        if (r < 200) {
+          this.positions.push(p);
+          this.points.push(circle);
+          n++;
+        }
 
-        n++;
+        
       }
     }
   }
