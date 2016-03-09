@@ -4,11 +4,9 @@ $c3: black;
 $c4: rgb(50,50,50);
 
 .skull {
-  background: rgb(243,243,21);
+  background: rgba(243,243,21,0.9);
   margin: 100px auto;
-  // padding: 100px;
   border-radius: 50%;
-  overflow: hidden;
   width: 500px;
   height: 500px;
 }

@@ -11,10 +11,17 @@ class Skull {
     this.positions = [];
     this.points = [];
 
+    this.dimensions = {
+      width: 500,
+      height: 500,
+      radius: 6
+    };
+
     this.container = document.getElementById('container');
     this.name = options.name;
     this.frameNum = 0;
     this.init();
+    this.drawOuterBars();
     this.drawSkull();
     this.render();
 
@@ -22,11 +29,6 @@ class Skull {
     this.step = options.step;
     this.colorScale = chroma.scale(['rgb(255,0,0)', options.color]);
 
-    this.dimensions = {
-      width: 500,
-      height: 500,
-      radius: 6
-    };
   }
   init() {
     this.svgContainer = d3.select(this.container).append('svg');
@@ -108,8 +110,13 @@ class Skull {
     // resize new canvas
     let ratio = imgWidth / imgHeight;
     this.dimensions.width = this.dimensions.height * ratio;
-    this.svgContainer.attr('width', this.dimensions.width);
-    this.svgContainer.attr('height', this.dimensions.height);
+    this.svgContainer.attr('width', this.dimensions.width + 140);
+    this.svgContainer.attr('height', this.dimensions.height + 40);
+
+    const xOffset = (this.dimensions.width - imgWidth) / 2;
+
+    // transform canvas
+    this.skull.attr('transform', `translate(${xOffset},0)`);
 
     let n = 0;
 
@@ -179,8 +186,46 @@ class Skull {
       }
     }
   }
+  interpolateSegmentPath(x, y, r, startAngle, endAngle) {
+    return t =>  this.generateSvgSegment(x, y, r, startAngle, startAngle + ((endAngle - startAngle) * t));
+  }
+  generateSvgSegment(x, y, r, startAngle, endAngle) {
+
+    startAngle *= (Math.PI / 180);
+    endAngle *= (Math.PI / 180);
+
+    if (startAngle > endAngle) {
+      let s = startAngle;
+      startAngle = endAngle;
+      endAngle = s;
+    }
+
+    let largeArc = endAngle - startAngle <= Math.PI ? 0 : 1;
+
+    return ['M', x, y, 'L', x + Math.cos(startAngle) * r, y - (Math.sin(startAngle) * r),
+            'A', r, r, 0, largeArc, 0, x + Math.cos(endAngle) * r, y - (Math.sin(endAngle) * r)
+           ].join(' ');
+  }
+  drawOuterBars() {
+    this.bars = this.svgContainer.append('g').attr('transform', `translate(250,250)`);
+
+    console.log('this.dimensions', this.dimensions);
+
+    this.bars
+      .append('path')
+      .attr('fill', 'rgb(243,243,21)')
+      // .attr('class', 'node-body__segment')
+      .transition()
+      .delay(200)
+      .duration(2000)
+      .attrTween('d', () => {
+
+        // arc fans out
+        return this.interpolateSegmentPath(0, 0, (this.dimensions.height / 2), 90, 90 - 359.99);
+      });
+  }
   drawSkull() {
-    this.skull = this.svgContainer.append('g').attr('transform', 'translate(0,0)');
+    this.skull = this.svgContainer.append('g');
 
     this.tempCanvas = document.createElement('canvas');
     
