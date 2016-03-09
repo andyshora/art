@@ -30,14 +30,19 @@ class Skull {
   }
   init() {
     this.svgContainer = d3.select(this.container).append('svg');
+    this.lastFrameTime = 0;
   }
   render() {
 
     this.frameNum++;
 
+    const ts = +new Date;
+    // console.log((ts - this.lastFrameTime) - 16);
+
+    this.lastFrameTime = ts;
     
     // skip every other frame to allow for 33ms processing time
-    const doWork = this.frameNum % 2;
+    const doWork = true;// this.frameNum % 3 === 0;
 
     if (doWork) {
       // check if positions need moving
